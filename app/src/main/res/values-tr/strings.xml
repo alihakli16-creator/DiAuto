@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">DiAuto</string>
   <string name="menu">Menü</string>
@@ -841,9 +841,9 @@
   <string name="native_wifi_version_exchange_description">Opens the Bluetooth handshake by telling the phone which protocol version this head unit speaks, the way factory head units do, instead of going straight to the connection details. Off by default. Worth trying if wireless worked before an Android Auto update and has failed since; if it makes no difference, turn it back off.</string>
   <string name="su_needed_keymaps_warning">Warning: Your headunit must be either rooted, or have Shizuku installed. If that\'s the case, you must allow SU rights, once prompted. Steering keys likely are not functional until this is fixed.</string>
   <string name="native_local_hotspot_wifi_settings">Araç Wi-Fi ayarlarını aç</string>
-  <string name="native_local_hotspot_wifi_settings_unavailable">Aracın Ayarlar uygulamasından Wi-Fi'yi açın.</string>
+  <string name="native_local_hotspot_wifi_settings_unavailable">Aracın Ayarlar uygulamasından Wi-Fi\'yi açın.</string>
   <string name="native_ap_transport_local_hotspot">Yerel Erişim Noktası (Hotspot)</string>
-  <string name="native_ap_transport_local_hotspot_hint">Deneysel. DiAuto, Android Auto için ayrı bir yerel erişim noktası kullanır; araç internet paketine ihtiyaç duyulmaz. Eski Android sürümlerinde uygulamanın Wi-Fi sürücüsünden 5 GHz erişim noktasını doğrulaması gerekir. DiLink 5.1'de haritalar veya müzik takılırsa, araç ayarlarından Wi-Fi anahtarını kapatmayı deneyin. Bluetooth ve telefonun Wi-Fi özelliğini açık tutun. Uyumluluk araca bağlıdır.</string>
+  <string name="native_ap_transport_local_hotspot_hint">Deneysel. DiAuto, Android Auto için ayrı bir yerel erişim noktası kullanır; araç internet paketine ihtiyaç duyulmaz. Eski Android sürümlerinde uygulamanın Wi-Fi sürücüsünden 5 GHz erişim noktasını doğrulaması gerekir. DiLink 5.1\'de haritalar veya müzik takılırsa, araç ayarlarından Wi-Fi anahtarını kapatmayı deneyin. Bluetooth ve telefonun Wi-Fi özelliğini açık tutun. Uyumluluk araca bağlıdır.</string>
   <string name="byd_navigation_title">BYD HUD ve Gösterge Paneli</string>
   <string name="byd_navigation_description">Desteklenen BYD ekranlarında Android Auto yol tariflerini gösterir. Deneyseldir; araç uyumluluğu modele göre değişebilir.</string>
   <string name="cluster_map_title">Gösterge panelinde Android Auto haritası (Deneysel)</string>
@@ -864,7 +864,7 @@
   <string name="cluster_marker_vertical">Araç imleci: Yukarı / Aşağı</string>
   <string name="cluster_marker_centre">Ortala</string>
   <string name="cluster_map_hint">Direksiyon menüsünden gösterge panelini Küçük veya Tam ekran navigasyona ayarlayın. Harita, Android Auto bağlı olduğu sürece, kamera veya diğer uygulamaların arkasında da açık kalır. Waze ve Google Haritalar gösterge haritasını destekler; dönüş kartı uygulamaya bağlıdır.</string>
-  <string name="cluster_map_overlay_hint">Kamera veya başka bir uygulama açıldığında gösterge paneli haritası kapanıyorsa, DiAuto'ya diğer uygulamaların üzerinde görüntüleme izni verin. İsteğe bağlıdır: birçok multimedya sistemi bu izin olmadan da haritayı açık tutar.</string>
+  <string name="cluster_map_overlay_hint">Kamera veya başka bir uygulama açıldığında gösterge paneli haritası kapanıyorsa, DiAuto\'ya diğer uygulamaların üzerinde görüntüleme izni verin. İsteğe bağlıdır: birçok multimedya sistemi bu izin olmadan da haritayı açık tutar.</string>
   <string name="cluster_map_overlay_grant">Diğer uygulamaların üzerinde görüntülemeye izin ver</string>
   <string name="cluster_map_overlay_unavailable">Bu multimedya sisteminde bu izin için bir ayar ekranı bulunmuyor.</string>
   <string name="byd_left_hand_traffic_title">Soldan akan trafik</string>
@@ -886,7 +886,7 @@
   <string name="setup_wi_fi_direct">Wi-Fi Direct</string>
   <string name="setup_wifi_direct_hint">Alternatif kurulum · Aracın Wi-Fi anahtarının açık olmasını gerektirir. 2.4 GHz bağlantıda takılmalar yaşanabilir.</string>
   <string name="setup_configure_hotspot">2 · Araç erişim noktasını ayarlayın</string>
-  <string name="setup_hotspot_instructions">Araç ayarlarından erişim noktasını açın ve varsa 5 GHz seçin. Adını ve şifresini tam olarak kopyalayın. Bağlanırken erişim noktasını açık bırakın. Telefonunuzdan manuel olarak bağlanmanıza gerek yoktur; DiAuto, Telefonu bağla'ya dokunduğunuzda bilgileri Bluetooth üzerinden gönderir.</string>
+  <string name="setup_hotspot_instructions">Araç ayarlarından erişim noktasını açın ve varsa 5 GHz seçin. Adını ve şifresini tam olarak kopyalayın. Bağlanırken erişim noktasını açık bırakın. Telefonunuzdan manuel olarak bağlanmanıza gerek yoktur; DiAuto, Telefonu bağla\'ya dokunduğunuzda bilgileri Bluetooth üzerinden gönderir.</string>
   <string name="setup_hotspot_on">Araç erişim noktası açık · Araç ayarlarında 5 GHz seçili olduğunu doğrulayın.</string>
   <string name="setup_hotspot_off">Araç erişim noktası kapalı · Bağlanmadan önce açın.</string>
   <string name="setup_hotspot_unknown">Erişim noktası durumu okunamıyor · Araç ayarlarından kontrol edin.</string>
@@ -903,12 +903,12 @@
   <string name="setup_prepare_car">2 · Aracı hazırlayın</string>
   <string name="setup_wifi_direct_instructions">Aracın Wi-Fi anahtarını açın. İstendiğinde Konum / Yakındaki cihazlar iznini verin ve Android istediğinde Konumu etkinleştirin. Oynatma takılırsa, dahili araç erişim noktasını 5 GHz bandında deneyin.</string>
   <string name="setup_pair_and_connect">3 · Eşleştirin ve bağlanın</string>
-  <string name="setup_pair_instructions">Android telefonunuzda Bluetooth ve Wi-Fi'yi açık tutun. Aracın Bluetooth'u ile eşleştirin. DiAuto'ya dönün, Telefonu bağla'ya dokunun ve telefonunuzu seçin. Telefonda çıkan Android Auto onaylarını kabul edin. Araç internet paketi gerekmez; mobil veri telefonunuzun ağ ayarlarına bağlıdır.</string>
+  <string name="setup_pair_instructions">Android telefonunuzda Bluetooth ve Wi-Fi\'yi açık tutun. Aracın Bluetooth\'u ile eşleştirin. DiAuto\'ya dönün, Telefonu bağla\'ya dokunun ve telefonunuzu seçin. Telefonda çıkan Android Auto onaylarını kabul edin. Araç internet paketi gerekmez; mobil veri telefonunuzun ağ ayarlarına bağlıdır.</string>
   <string name="setup_open_bluetooth_settings">Bluetooth ayarlarını aç</string>
   <string name="setup_review_app_permissions">Uygulama izinlerini gözden geçir</string>
-  <string name="setup_done_return_to_diauto">Tamamlandı · DiAuto'ya dön</string>
+  <string name="setup_done_return_to_diauto">Tamamlandı · DiAuto\'ya dön</string>
   <string name="setup_prefer_a_cable">Kabloyu mu tercih edersiniz?</string>
-  <string name="setup_usb_instructions">Bir USB veri kablosu ve aracın USB veri bağlantı noktasını kullanın. Telefonunuzun kilidini açın ve DiAuto ana ekranında USB ile Bağlan'a dokunun. Herhangi bir erişim noktası kurulumu gerekmez.</string>
+  <string name="setup_usb_instructions">Bir USB veri kablosu ve aracın USB veri bağlantı noktasını kullanın. Telefonunuzun kilidini açın ve DiAuto ana ekranında USB ile Bağlan\'a dokunun. Herhangi bir erişim noktası kurulumu gerekmez.</string>
   <string name="setup_hotspot_copy_hint">Adı ve şifreyi aracın erişim noktası ayarlarından kopyalayın. Buraya kaydetmek aracın erişim noktasını değiştirmez.</string>
   <string name="setup_hotspot_name">Erişim noktası adı (SSID)</string>
   <string name="setup_hotspot_password">Erişim noktası şifresi</string>
@@ -919,7 +919,7 @@
   <string name="setup_invalid_hotspot_name">Erişim noktası adını girin (1-32 bayt)</string>
   <string name="setup_invalid_hotspot_password">Erişim noktası şifresini girin (8-63 ASCII karakteri)</string>
   <string name="setup_open_settings_manually">Aracın ayarlarını ana ekranından açın.</string>
-  <string name="diagnostic_file_picker_unavailable">Dosya seçici mevcut değil. Android 10 veya daha yeni sürümlerde 'Tanılama raporunu kaydet' seçeneğini kullanın.</string>
+  <string name="diagnostic_file_picker_unavailable">Dosya seçici mevcut değil. Android 10 veya daha yeni sürümlerde \'Tanılama raporunu kaydet\' seçeneğini kullanın.</string>
   <string name="diagnostic_saving_report">Rapor kaydediliyor…</string>
   <string name="diagnostic_report_saved">Tanılama raporu kaydedildi</string>
   <string name="diagnostic_saved_to_your_selected_location">Seçtiğiniz konuma kaydedildi.</string>
@@ -952,6 +952,6 @@
   <string name="turn_card_info_duration_hm">%1$d sa %2$d dk</string>
   <string name="turn_card_info_duration_m">%1$d dk</string>
   <string name="turn_card_info_km">%1$.1f km</string>
-  <string name="cluster_usage_access_hint">Senaryo temasında yan harita her gösterge kartında görünür. Yalnızca harita kartında görünmesi için DiAuto'ya Kullanım erişimi izni verin. Düğme hiçbir şey açmıyorsa, ADB üzerinden verilebilir: appops set com.andrerinas.headunitrevived GET_USAGE_STATS allow</string>
+  <string name="cluster_usage_access_hint">Senaryo temasında yan harita her gösterge kartında görünür. Yalnızca harita kartında görünmesi için DiAuto\'ya Kullanım erişimi izni verin. Düğme hiçbir şey açmıyorsa, ADB üzerinden verilebilir: appops set com.andrerinas.headunitrevived GET_USAGE_STATS allow</string>
   <string name="cluster_usage_access_grant">Kullanım erişimine izin ver</string>
 </resources>
