@@ -208,6 +208,11 @@ class NativeAaHandshakeManager(
     // same service record. See NativeHandoffPolicy.shouldWarnPhoneNeverCallsBack.
     @Volatile private var pokesSinceLastAccept = 0
     @Volatile private var everAcceptedAaConnection = false
+
+    private val isCarHeadUnit: Boolean
+        get() = Build.MANUFACTURER.contains("BYD", ignoreCase = true) ||
+                Build.BRAND.contains("BYD", ignoreCase = true) ||
+                BluetoothHelper.handsFreeLinkState(context) == true
     // [BUG_FIX] Handshakes that timed out waiting for Type 2, back to back. Where close() does not
     // interrupt a pending read each one strands a Dispatchers.IO thread forever, so this bounds
     // how many we are willing to strand. See NativeHandoffPolicy.shouldServeHandshake.
@@ -339,26 +344,30 @@ class NativeAaHandshakeManager(
             }
         }
 
-        // Start HFP RFCOMM Server (Required by some phones to detect HU)
-        scope.launch(Dispatchers.IO + CoroutineName("NativeAa-HfpServer")) {
-            try {
-                hfpServerSocket = adapter.listenUsingRfcommWithServiceRecord("Hands-Free Unit", HFP_UUID)
-                while (isRunning && isActive) {
-                    val socket = hfpServerSocket?.accept()
-                    if (socket != null) {
-                        logHfpAccept(socket, localRadioName)
-                        scope.launch(Dispatchers.IO + CoroutineName("NativeAa-HfpResponder-${socket.remoteDevice.address}")) {
-                            handleHfp(socket)
+        // Start HFP RFCOMM Server only if the head unit does not already have an active native Bluetooth stack
+        if (!isCarHeadUnit) {
+            scope.launch(Dispatchers.IO + CoroutineName("NativeAa-HfpServer")) {
+                try {
+                    hfpServerSocket = adapter.listenUsingRfcommWithServiceRecord("Hands-Free Unit", HFP_UUID)
+                    while (isRunning && isActive) {
+                        val socket = hfpServerSocket?.accept()
+                        if (socket != null) {
+                            logHfpAccept(socket, localRadioName)
+                            scope.launch(Dispatchers.IO + CoroutineName("NativeAa-HfpResponder-${socket.remoteDevice.address}")) {
+                                handleHfp(socket)
+                            }
                         }
                     }
-                }
-            } catch (e: Exception) {
-                if (isRunning) {
-                    AppLog.e("NativeAA: HFP Server socket error: ${e.message}", e)
-                } else {
-                    AppLog.d("NativeAA: HFP Server socket closed cleanly.")
+                } catch (e: Exception) {
+                    if (isRunning) {
+                        AppLog.e("NativeAA: HFP Server socket error: ${e.message}", e)
+                    } else {
+                        AppLog.d("NativeAA: HFP Server socket closed cleanly.")
+                    }
                 }
             }
+        } else {
+            AppLog.i("NativeAA: Preserving vehicle's native Bluetooth hands-free link (skipping internal HFP server).")
         }
 
         // Some head units have two Bluetooth radios (e.g. "K706" and "CAR8032"). The phone may
@@ -428,22 +437,24 @@ class NativeAaHandshakeManager(
                 else AppLog.d("NativeAA: Secondary AA server closed cleanly ['$serviceName' $radioName].")
             }
         }
-        scope.launch(Dispatchers.IO + CoroutineName("NativeAa-HfpServer-2")) {
-            try {
-                val server = extra.listenUsingRfcommWithServiceRecord("Hands-Free Unit", HFP_UUID)
-                extraHfpServerSockets.add(server)
-                while (isRunning && isActive) {
-                    val socket = server.accept()
-                    if (socket != null) {
-                        logHfpAccept(socket, "$serviceName $radioName")
-                        scope.launch(Dispatchers.IO + CoroutineName("NativeAa-HfpResponder-${socket.remoteDevice.address}")) {
-                            handleHfp(socket)
+        if (!isCarHeadUnit) {
+            scope.launch(Dispatchers.IO + CoroutineName("NativeAa-HfpServer-2")) {
+                try {
+                    val server = extra.listenUsingRfcommWithServiceRecord("Hands-Free Unit", HFP_UUID)
+                    extraHfpServerSockets.add(server)
+                    while (isRunning && isActive) {
+                        val socket = server.accept()
+                        if (socket != null) {
+                            logHfpAccept(socket, "$serviceName $radioName")
+                            scope.launch(Dispatchers.IO + CoroutineName("NativeAa-HfpResponder-${socket.remoteDevice.address}")) {
+                                handleHfp(socket)
+                            }
                         }
                     }
+                } catch (e: Exception) {
+                    if (isRunning) AppLog.e("NativeAA: Secondary HFP server error ['$serviceName' $radioName]: ${e.message}", e)
+                    else AppLog.d("NativeAA: Secondary HFP server closed cleanly ['$serviceName' $radioName].")
                 }
-            } catch (e: Exception) {
-                if (isRunning) AppLog.e("NativeAA: Secondary HFP server error ['$serviceName' $radioName]: ${e.message}", e)
-                else AppLog.d("NativeAA: Secondary HFP server closed cleanly ['$serviceName' $radioName].")
             }
         }
     }
@@ -595,9 +606,15 @@ class NativeAaHandshakeManager(
      * the retry loop and the manual poke alike.
      */
     private suspend fun pokeDevice(device: BluetoothDevice, holdMs: Long): Boolean {
+        // If the device is already connected via Bluetooth ACL/profiles, do NOT poke to avoid disrupting the native link
+        if (BluetoothHelper.isDeviceConnected(device)) {
+            AppLog.i("NativeAA: Device ${device.name ?: device.address} is already connected via Bluetooth. Skipping wake poke.")
+            return false
+        }
+
         // A quick proactive poke wakes up Gearhead without waiting 30-45 seconds
         val handsFreeLink = BluetoothWakePolicy.HandsFreeLink.of(BluetoothHelper.handsFreeLinkState(context))
-        if (!BluetoothWakePolicy.shouldPoke(handsFreeLink, forcePoke = true)) {
+        if (!BluetoothWakePolicy.shouldPoke(handsFreeLink, forcePoke = false)) {
             noteHandsFreePokeSkip(device)
             return false
         }

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">DiAuto</string>
   <string name="menu">Menü</string>
@@ -946,8 +946,6 @@
   <string name="cluster_turn_card_overlay_description">DiPlay gibi, gösterge haritasının üzerinde bir sonraki dönüşü, mesafeyi ve caddeyi çizer.</string>
   <string name="cluster_turn_card_position">Dönüş kartı konumu</string>
   <string name="cluster_pos_left">Sol</string>
-  <string name="cluster_hide_google_card">Google Haritalar kartını gizle / kırp</string>
-  <string name="cluster_hide_google_card_description">Gösterge ekranındaki Google Haritalar yönlendirme kartını gizler</string>
   <string name="cluster_pos_center">Ortala</string>
   <string name="cluster_pos_right">Sağ</string>
   <string name="turn_card_now">Şimdi</string>

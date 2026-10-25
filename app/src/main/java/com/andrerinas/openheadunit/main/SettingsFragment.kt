@@ -91,7 +91,6 @@ class SettingsFragment : Fragment() {
     private var pendingClusterTheme: Int? = null
     private var pendingClusterTurnCardOverlay: Boolean? = null
     private var pendingClusterTurnCardPosition: Int? = null
-    private var pendingClusterHideGoogleNavCard: Boolean? = null
     private var pendingBydLeftHandTraffic: Boolean? = null
     private var pendingShowNavigationNotifications: Boolean? = null
     private var pendingSyncMediaSessionAaMetadata: Boolean? = null
@@ -228,7 +227,6 @@ class SettingsFragment : Fragment() {
         pendingClusterTheme = settings.clusterTheme
         pendingClusterTurnCardOverlay = settings.clusterTurnCardOverlay
         pendingClusterTurnCardPosition = settings.clusterTurnCardPosition
-        pendingClusterHideGoogleNavCard = settings.clusterHideGoogleNavCard
         pendingBydLeftHandTraffic = settings.bydLeftHandTraffic
         pendingShowNavigationNotifications = settings.showNavigationNotifications
         pendingSyncMediaSessionAaMetadata = settings.syncMediaSessionWithAaMetadata
@@ -354,7 +352,6 @@ class SettingsFragment : Fragment() {
         pendingClusterTheme = settings.clusterTheme
         pendingClusterTurnCardOverlay = settings.clusterTurnCardOverlay
         pendingClusterTurnCardPosition = settings.clusterTurnCardPosition
-        pendingClusterHideGoogleNavCard = settings.clusterHideGoogleNavCard
         pendingBydLeftHandTraffic = settings.bydLeftHandTraffic
         pendingShowNavigationNotifications = settings.showNavigationNotifications
         pendingSyncMediaSessionAaMetadata = settings.syncMediaSessionWithAaMetadata
@@ -487,7 +484,6 @@ class SettingsFragment : Fragment() {
         pendingClusterTheme?.let { settings.clusterTheme = it }
         pendingClusterTurnCardOverlay?.let { settings.clusterTurnCardOverlay = it }
         pendingClusterTurnCardPosition?.let { settings.clusterTurnCardPosition = it }
-        pendingClusterHideGoogleNavCard?.let { settings.clusterHideGoogleNavCard = it }
         pendingBydLeftHandTraffic?.let { settings.bydLeftHandTraffic = it }
         pendingShowNavigationNotifications?.let { settings.showNavigationNotifications = it }
         pendingSyncMediaSessionAaMetadata?.let { settings.syncMediaSessionWithAaMetadata = it }
@@ -621,7 +617,6 @@ class SettingsFragment : Fragment() {
                         pendingClusterTheme != settings.clusterTheme ||
                         pendingClusterTurnCardOverlay != settings.clusterTurnCardOverlay ||
                         pendingClusterTurnCardPosition != settings.clusterTurnCardPosition ||
-                        pendingClusterHideGoogleNavCard != settings.clusterHideGoogleNavCard ||
                         pendingBydLeftHandTraffic != settings.bydLeftHandTraffic ||
                         pendingShowNavigationNotifications != settings.showNavigationNotifications ||
                         pendingSyncMediaSessionAaMetadata != settings.syncMediaSessionWithAaMetadata ||
@@ -1332,17 +1327,6 @@ class SettingsFragment : Fragment() {
                         checkChanges()
                     }
                 }
-                items.add(SettingItem.ToggleSettingEntry(
-                    stableId = "clusterHideGoogleNavCard",
-                    nameResId = R.string.cluster_hide_google_card,
-                    descriptionResId = R.string.cluster_hide_google_card_description,
-                    isChecked = pendingClusterHideGoogleNavCard ?: settings.clusterHideGoogleNavCard,
-                    onCheckedChanged = { enabled ->
-                        pendingClusterHideGoogleNavCard = enabled
-                        checkChanges()
-                        updateSettingsList()
-                    }
-                ))
                 choice("clusterMapSize", R.string.cluster_map_size,
                     arrayOf(getString(R.string.cluster_map_size_normal), getString(R.string.cluster_map_size_large)),
                     pendingClusterMapSize ?: 0) { pendingClusterMapSize = it }

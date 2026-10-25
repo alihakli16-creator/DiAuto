@@ -69,19 +69,6 @@ internal class ClusterMapScreen(
             root.setBackgroundColor(Color.BLACK)
         }
         addMap(root, sideWindow)
-        if (settings.clusterHideGoogleNavCard) {
-            val mask = android.view.View(context).apply {
-                setBackgroundColor(if (sideWindow != null) Color.TRANSPARENT else Color.BLACK)
-            }
-            val maskWidth = (ClusterMapConfig.PANEL_WIDTH * 0.35f).toInt()
-            val maskHeight = (ClusterMapConfig.PANEL_HEIGHT * 0.50f).toInt()
-            val maskLeft = (ClusterMapConfig.PANEL_WIDTH * 0.65f).toInt()
-            val maskTop = (ClusterMapConfig.PANEL_HEIGHT * 0.14f).toInt()
-            root.addView(mask, FrameLayout.LayoutParams(maskWidth, maskHeight).apply {
-                leftMargin = maskLeft
-                topMargin = maskTop
-            })
-        }
         if (settings.clusterTurnCardOverlay) {
             turnCard = ClusterTurnCardView(context).apply {
                 visibility = android.view.View.GONE

@@ -32,14 +32,16 @@ object BydNavigationOutputs {
         initialized = true
 
         // 1. Standalone CAN HUD broadcast (distance, turn, street name)
-        var standalone: BydStandaloneHudOutput? = null
-        schedule("diauto-standalone-navi", app, repeatNs = 1_000_000_000L) { value ->
-            val output = standalone ?: BydStandaloneHudOutput.create(app)?.also { standalone = it }
-            if (value == null) output?.clear()
-            else output?.update(value.clusterIcon, value.roundaboutExit, value.distanceMeters, value.road)
+        if (BydStandaloneHudOutput.available(app)) {
+            var standalone: BydStandaloneHudOutput? = null
+            schedule("diauto-standalone-navi", app, repeatNs = 1_000_000_000L) { value ->
+                val output = standalone ?: BydStandaloneHudOutput.create(app)?.also { standalone = it }
+                if (value == null) output?.clear()
+                else output?.update(value.clusterIcon, value.roundaboutExit, value.distanceMeters, value.road)
+            }
         }
 
-        // 2. Direct BYD Auto Instrument Device HAL & DiLink 3.0 session heartbeat
+        // 2. Direct BYD Auto Instrument Device HAL
         try {
             val factory = BydFactoryNavigationOutput(app)
             schedule("diauto-factory-navi", app, repeatNs = 1_000_000_000L) { value ->
@@ -47,40 +49,36 @@ object BydNavigationOutputs {
                 else factory.update(value.clusterIcon, value.roundaboutExit, value.distanceMeters)
             }
         } catch (e: Exception) {
-            Log.d("DiAuto-BYD", "Factory navigation schedule note: ${e.message}")
+            Log.d("DiAuto-BYD", "Factory navigation schedule skipped: ${e.message}")
         }
 
-        // 3. Cluster & HUD AutoNavi Broadcast (both implicit & candidate packages)
-        val cluster = BydClusterOutput(app, clusterPackage(app))
-        schedule("diauto-cluster", app, repeatNs = 1_000_000_000L, cluster::update)
-
-        // 4. SOME/IP HUD Service (DiLink 4/5 / Seal / Seal U)
-        try {
-            BydHudBridge.initialize(app)
-            schedule("diauto-hud", app, repeatNs = 500_000_000L) { value ->
-                BydHudBridge.update(value)
-            }
-        } catch (e: Exception) {
-            Log.d("DiAuto-BYD", "SOME/IP HUD schedule note: ${e.message}")
+        // 3. Cluster AutoNavi Broadcast
+        clusterPackage(app)?.let { target ->
+            val cluster = BydClusterOutput(app, target)
+            schedule("diauto-cluster", app, cluster::update)
         }
 
-        // 5. CarServer Property Service
-        try {
-            val carServer = BydCarServerNavigationOutput(app)
-            schedule("diauto-carserver-navi", app, repeatNs = 1_000_000_000L) { value ->
-                if (value == null) carServer.clear()
-                else carServer.update(value.clusterIcon, value.roundaboutExit, value.distanceMeters)
+        // 4. SOME/IP HUD Service
+        if (installed(app, "com.ts.car.someip.service")) {
+            var hudInitialized = false
+            schedule("diauto-hud", app) { value ->
+                if (value != null && !hudInitialized) {
+                    BydHudBridge.initialize(app)
+                    hudInitialized = true
+                }
+                if (hudInitialized) BydHudBridge.update(value)
             }
-        } catch (e: Exception) {
-            Log.d("DiAuto-BYD", "Car-server navigation schedule note: ${e.message}")
         }
     }
 
     @Synchronized internal fun currentForDiagnostic(context: Context): BydGuidance? =
-        if (active && Settings(context).bydNavigationEnabled) latest.current() else null
+        if (context.packageName.endsWith(".bydhudtest") && active && Settings(context).bydNavigationEnabled) latest.current() else null
 
     @Synchronized internal fun update(value: BydGuidance?) { if (active) latest.update(value) }
     @Synchronized fun stop() { active = false; latest.update(null) }
+
+    private fun schedule(name: String, context: Context, send: (BydGuidance?) -> Unit) =
+        schedule(name, context, 5_000_000_000L, send)
 
     private fun schedule(name: String, context: Context, repeatNs: Long, send: (BydGuidance?) -> Unit) {
         var previous: BydGuidance? = null
@@ -91,7 +89,7 @@ object BydNavigationOutputs {
                     if (syntheticHold || BydStandaloneHudOutput.syntheticHold) return@scheduleWithFixedDelay
                     val value = if (active && Settings(context).bydNavigationEnabled) latest.current() else null
                     val now = System.nanoTime()
-                    if (value != previous || (value != null && now - lastSendNs >= repeatNs)) {
+                    if (value != previous || now - lastSendNs >= repeatNs) {
                         send(value)
                         previous = value
                         lastSendNs = now

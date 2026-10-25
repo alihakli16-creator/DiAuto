@@ -96,51 +96,18 @@ internal class ClusterTurnCardView(context: Context) : View(context) {
         canvas.drawRoundRect(rect, chip * 0.26f, chip * 0.26f, chipPaint)
         drawGlyph(canvas, next, chipLeft, chipTop, chip)
 
-        val textLeft = chipLeft + chip + h * 0.12f
-        val textWidth = card.left + w - h * 0.08f - textLeft
+        val textLeft = chipLeft + chip + h * 0.14f
+        val textWidth = card.left + w - h * 0.10f - textLeft
         if (textWidth <= 0f) return
-
-        val parts = mutableListOf<String>()
-        if (next.remainingSeconds > 0) {
-            val hours = next.remainingSeconds / 3600
-            val minutes = (next.remainingSeconds % 3600) / 60
-            parts += if (hours > 0) context.getString(R.string.turn_card_info_duration_hm, hours, minutes)
-                else context.getString(R.string.turn_card_info_duration_m, minutes)
-        }
-        if (next.remainingMeters > 0) {
-            parts += context.getString(R.string.turn_card_info_km, next.remainingMeters / 1000.0)
-        }
-        val arrivalStr = next.estimatedArrival ?: if (next.remainingSeconds > 0) {
-            val arrival = Date(System.currentTimeMillis() + next.remainingSeconds * 1000L)
-            SimpleDateFormat("HH:mm", Locale.getDefault()).format(arrival)
-        } else null
-        if (!arrivalStr.isNullOrBlank()) {
-            parts += context.getString(R.string.turn_card_info_arrival, arrivalStr)
-        }
-
-        val hasInfo = parts.isNotEmpty()
+        distancePaint.textSize = h * 0.30f
+        roadPaint.textSize = h * 0.17f
+        canvas.drawText(ellipsize(distanceLabel(next.distanceMeters), textWidth, distancePaint),
+            textLeft, card.top + h * 0.44f, distancePaint)
         val road = if (next.roundaboutExit in 1..9) context.getString(R.string.turn_card_exit, next.roundaboutExit) else next.road
-
-        if (hasInfo) {
-            distancePaint.textSize = h * 0.27f
-            roadPaint.textSize = h * 0.18f
-            infoPaint.textSize = h * 0.14f
-            canvas.drawText(ellipsize(distanceLabel(next.distanceMeters), textWidth, distancePaint),
-                textLeft, card.top + h * 0.33f, distancePaint)
-            if (road.isNotBlank()) {
-                canvas.drawText(ellipsize(road, textWidth, roadPaint), textLeft, card.top + h * 0.59f, roadPaint)
-            }
-            val infoText = parts.joinToString("   ·   ")
-            canvas.drawText(ellipsize(infoText, textWidth, infoPaint), textLeft, card.top + h * 0.84f, infoPaint)
-        } else {
-            distancePaint.textSize = h * 0.30f
-            roadPaint.textSize = h * 0.17f
-            canvas.drawText(ellipsize(distanceLabel(next.distanceMeters), textWidth, distancePaint),
-                textLeft, card.top + h * 0.44f, distancePaint)
-            if (road.isNotBlank()) {
-                canvas.drawText(ellipsize(road, textWidth, roadPaint), textLeft, card.top + h * 0.72f, roadPaint)
-            }
+        if (road.isNotBlank()) {
+            canvas.drawText(ellipsize(road, textWidth, roadPaint), textLeft, card.top + h * 0.72f, roadPaint)
         }
+        drawInfoStrip(canvas, next, card)
     }
 
     /** The arrival/duration/distance pill under the card, like the stock navigation bar. */
@@ -224,7 +191,7 @@ internal object ClusterTurnCardPlacement {
     // DiPlay's measured clear centre of a DiLink 5.0 cluster, in percent of the panel.
     private const val SAFE_LEFT = 35
     private const val SAFE_RIGHT = 36
-    private const val ASPECT = 2.1f
+    private const val ASPECT = 2.64f
 
     data class Box(val left: Int, val top: Int, val width: Int, val height: Int)
 
@@ -237,34 +204,25 @@ internal object ClusterTurnCardPlacement {
             // Full map:
             plan != null -> {
                 val cx = when (positionMode) {
-                    0 -> panelWidth * 16 / 100 // Sol
+                    0 -> panelWidth * 18 / 100 // Sol
                     1 -> panelWidth * 50 / 100 // Ortala
                     else -> panelWidth * 35 / 100 // Sağ
                 }
-                val w = when (positionMode) {
-                    0 -> panelWidth * 25 / 100
-                    1 -> panelWidth * 22 / 100
-                    else -> panelWidth * 18 / 100
-                }
-                Triple(w, cx, plan.top + plan.height * 25 / 100)
+                Triple(panelWidth * 16 / 100, cx, plan.top + plan.height * 25 / 100)
             }
             // DiLink 5.0 full panel (BYD Seal U DM-i):
             else -> {
                 val cx = when (positionMode) {
-                    0 -> panelWidth * 16 / 100 // Sol (sürücü ekranı sembollerinden uzak!)
+                    0 -> panelWidth * 22 / 100 // Sol (sürücü ekranı sembollerinden uzak!)
                     1 -> panelWidth * 50 / 100 // Ortala
                     else -> panelWidth * 76 / 100 // Sağ (DiPlay orijinali)
                 }
-                val w = when (positionMode) {
-                    0 -> panelWidth * 25 / 100 // Genişletilmiş Sol Kart (~480px)
-                    1 -> panelWidth * 22 / 100
-                    else -> panelWidth * (100 - SAFE_LEFT - SAFE_RIGHT) / 100 * 55 / 100
-                }
-                Triple(w, cx, panelHeight * 28 / 100)
+                Triple(panelWidth * (100 - SAFE_LEFT - SAFE_RIGHT) / 100 * 55 / 100,
+                    cx, panelHeight * 30 / 100)
             }
         }
         val cardWidth = width.coerceIn(150, panelWidth)
-        val cardHeight = (cardWidth / ASPECT).toInt().coerceAtLeast(64).coerceAtMost(panelHeight)
+        val cardHeight = (cardWidth / ASPECT).toInt().coerceAtLeast(58).coerceAtMost(panelHeight)
         val left = (centerX - cardWidth / 2).coerceIn(0, panelWidth - cardWidth)
         val top = (centerY - cardHeight / 2).coerceIn(0, panelHeight - cardHeight)
         return Box(left, top, cardWidth, cardHeight)

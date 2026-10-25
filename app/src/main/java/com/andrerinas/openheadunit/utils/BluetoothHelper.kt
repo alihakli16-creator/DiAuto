@@ -127,18 +127,37 @@ object BluetoothHelper {
         if (enabled == false) return false
 
         var readAnyState = false
-        for (profile in intArrayOf(PROFILE_HEADSET_CLIENT, BluetoothProfile.HEADSET)) {
+        val profilesToCheck = intArrayOf(
+            PROFILE_HEADSET_CLIENT,
+            BluetoothProfile.HEADSET,
+            BluetoothProfile.A2DP,
+            PROFILE_A2DP_SINK
+        )
+        for (profile in profilesToCheck) {
             val state = try {
                 adapter.getProfileConnectionState(profile)
             } catch (e: Exception) {
                 // SecurityException without BLUETOOTH_CONNECT, or an adapter that rejects the
-                // hidden client profile. Try the other role before giving up.
+                // hidden profile. Try the other roles before giving up.
                 continue
             }
             readAnyState = true
             if (state == BluetoothProfile.STATE_CONNECTED) return true
         }
         return if (readAnyState) false else null
+    }
+
+    /**
+     * Check if a specific BluetoothDevice is currently connected at the Bluetooth ACL/profile level.
+     * Reflection is used for backward compatibility across Android API versions.
+     */
+    fun isDeviceConnected(device: BluetoothDevice): Boolean {
+        return try {
+            val method = device.javaClass.getMethod("isConnected")
+            (method.invoke(device) as? Boolean) == true
+        } catch (e: Exception) {
+            false
+        }
     }
 
     /**

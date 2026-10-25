@@ -155,11 +155,6 @@ class Settings(private val context: Context) {
     var clusterTurnCardPosition: Int
         get() = prefs.getInt("cluster-turn-card-position", 0)
         set(value) { prefs.edit().putInt("cluster-turn-card-position", value).apply() }
-
-    /** Hide or crop Google Maps' native turn card on instrument cluster. */
-    var clusterHideGoogleNavCard: Boolean
-        get() = prefs.getBoolean("cluster-hide-google-card", false)
-        set(value) { prefs.edit().putBoolean("cluster-hide-google-card", value).apply() }
     // Traffic side for BYD cluster/HUD roundabouts. Legacy Android Auto turn events carry the exit
     // number but not the circulation direction, which the cluster needs to show that exit.
     // false = traffic keeps right (counter-clockwise roundabouts), the common case.
