@@ -994,6 +994,10 @@
   <string name="cluster_theme_simple">Sade</string>
   <string name="cluster_turn_card_overlay">Gösterge haritasında dönüş kartı</string>
   <string name="cluster_turn_card_overlay_description">DiPlay gibi, gösterge haritasının üzerinde bir sonraki dönüşü, mesafeyi ve caddeyi çizer.</string>
+  <string name="cluster_turn_card_position" translatable="false">Dönüş kartı konumu</string>
+  <string name="cluster_pos_left" translatable="false">Sol</string>
+  <string name="cluster_pos_center" translatable="false">Ortala</string>
+  <string name="cluster_pos_right" translatable="false">Sağ</string>
   <string name="turn_card_now">Şimdi</string>
   <string name="turn_card_distance_m">%1$d m</string>
   <string name="turn_card_distance_km">%1$.1f km</string>

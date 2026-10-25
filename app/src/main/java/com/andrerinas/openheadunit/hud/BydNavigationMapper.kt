@@ -4,6 +4,10 @@ import com.andrerinas.openheadunit.aap.AapNavigationHelper.NavigationSnapshot
 import com.andrerinas.openheadunit.aap.protocol.proto.NavigationStatus
 
 internal object BydNavigationMapper {
+    @Volatile private var cachedRemainingMeters = -1
+    @Volatile private var cachedRemainingSeconds = -1
+    @Volatile private var lastRemainingTimestampMs = 0L
+
     /**
      * @param leftHandTraffic the "traffic keeps left" setting. Legacy turn events carry no
      * circulation direction for roundabouts, so this setting supplies it: clockwise where traffic
@@ -11,7 +15,11 @@ internal object BydNavigationMapper {
      */
     fun from(snapshot: NavigationSnapshot, leftHandTraffic: Boolean = false): BydGuidance? {
         val status = snapshot.clusterStatus?.payload?.status
-        if (status != null && status != NavigationStatus.NavigationClusterStatus.NavigationStatusEnum.ACTIVE) return null
+        if (status != null && status != NavigationStatus.NavigationClusterStatus.NavigationStatusEnum.ACTIVE) {
+            cachedRemainingMeters = -1
+            cachedRemainingSeconds = -1
+            return null
+        }
         val step = snapshot.navigationState?.payload?.stepsList?.firstOrNull()
         if (snapshot.navigationState != null && step == null) return null
         val legacy = snapshot.nextTurnDetail?.payload
@@ -29,10 +37,22 @@ internal object BydNavigationMapper {
         val road = step?.takeIf { it.hasRoad() && it.road.hasName() }?.road?.name?.takeIf { it.isNotBlank() }
             ?: legacy?.road?.takeIf { it.isNotBlank() } ?: snapshot.currentStreet?.payload.orEmpty()
         val destination = position?.destinationDistancesList?.firstOrNull()
-        val remaining = destination?.takeIf { it.hasDistance() && it.distance.hasMeters() }?.distance?.meters ?: -1
-        val seconds = destination?.takeIf { it.hasTimeToArrivalSeconds() }?.timeToArrivalSeconds
+        val rawRemaining = destination?.takeIf { it.hasDistance() && it.distance.hasMeters() }?.distance?.meters ?: -1
+        val rawSeconds = destination?.takeIf { it.hasTimeToArrivalSeconds() }?.timeToArrivalSeconds
             ?.coerceIn(0, Int.MAX_VALUE.toLong())?.toInt() ?: -1
-        return BydGuidance(codes.cluster, codes.gaode, codes.arrow, codes.exit, distance, road, remaining, seconds)
+
+        val now = System.currentTimeMillis()
+        if (rawSeconds > 0) {
+            cachedRemainingSeconds = rawSeconds
+            cachedRemainingMeters = rawRemaining
+            lastRemainingTimestampMs = now
+        } else if (cachedRemainingSeconds > 0 && now - lastRemainingTimestampMs < 120_000L) {
+            val elapsedSec = ((now - lastRemainingTimestampMs) / 1000L).toInt()
+            cachedRemainingSeconds = maxOf(0, cachedRemainingSeconds - elapsedSec)
+            lastRemainingTimestampMs = now
+        }
+
+        return BydGuidance(codes.cluster, codes.gaode, codes.arrow, codes.exit, distance, road, cachedRemainingMeters, cachedRemainingSeconds)
     }
 
     data class Codes(val cluster: Int, val gaode: Int, val arrow: Int, val exit: Int = 0)

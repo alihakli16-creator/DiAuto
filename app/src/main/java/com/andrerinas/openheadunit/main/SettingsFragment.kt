@@ -90,6 +90,7 @@ class SettingsFragment : Fragment() {
     private var pendingClusterMapWidth: Int? = null
     private var pendingClusterTheme: Int? = null
     private var pendingClusterTurnCardOverlay: Boolean? = null
+    private var pendingClusterTurnCardPosition: Int? = null
     private var pendingBydLeftHandTraffic: Boolean? = null
     private var pendingShowNavigationNotifications: Boolean? = null
     private var pendingSyncMediaSessionAaMetadata: Boolean? = null
@@ -225,6 +226,7 @@ class SettingsFragment : Fragment() {
         pendingClusterMapWidth = settings.clusterMapWidth
         pendingClusterTheme = settings.clusterTheme
         pendingClusterTurnCardOverlay = settings.clusterTurnCardOverlay
+        pendingClusterTurnCardPosition = settings.clusterTurnCardPosition
         pendingBydLeftHandTraffic = settings.bydLeftHandTraffic
         pendingShowNavigationNotifications = settings.showNavigationNotifications
         pendingSyncMediaSessionAaMetadata = settings.syncMediaSessionWithAaMetadata
@@ -349,6 +351,7 @@ class SettingsFragment : Fragment() {
         pendingClusterMapWidth = settings.clusterMapWidth
         pendingClusterTheme = settings.clusterTheme
         pendingClusterTurnCardOverlay = settings.clusterTurnCardOverlay
+        pendingClusterTurnCardPosition = settings.clusterTurnCardPosition
         pendingBydLeftHandTraffic = settings.bydLeftHandTraffic
         pendingShowNavigationNotifications = settings.showNavigationNotifications
         pendingSyncMediaSessionAaMetadata = settings.syncMediaSessionWithAaMetadata
@@ -480,6 +483,7 @@ class SettingsFragment : Fragment() {
         pendingClusterMapWidth?.let { settings.clusterMapWidth = it }
         pendingClusterTheme?.let { settings.clusterTheme = it }
         pendingClusterTurnCardOverlay?.let { settings.clusterTurnCardOverlay = it }
+        pendingClusterTurnCardPosition?.let { settings.clusterTurnCardPosition = it }
         pendingBydLeftHandTraffic?.let { settings.bydLeftHandTraffic = it }
         pendingShowNavigationNotifications?.let { settings.showNavigationNotifications = it }
         pendingSyncMediaSessionAaMetadata?.let { settings.syncMediaSessionWithAaMetadata = it }
@@ -612,6 +616,7 @@ class SettingsFragment : Fragment() {
                         pendingClusterMapWidth != settings.clusterMapWidth ||
                         pendingClusterTheme != settings.clusterTheme ||
                         pendingClusterTurnCardOverlay != settings.clusterTurnCardOverlay ||
+                        pendingClusterTurnCardPosition != settings.clusterTurnCardPosition ||
                         pendingBydLeftHandTraffic != settings.bydLeftHandTraffic ||
                         pendingShowNavigationNotifications != settings.showNavigationNotifications ||
                         pendingSyncMediaSessionAaMetadata != settings.syncMediaSessionWithAaMetadata ||
@@ -1306,8 +1311,22 @@ class SettingsFragment : Fragment() {
                     onCheckedChanged = { enabled ->
                         pendingClusterTurnCardOverlay = enabled
                         checkChanges()
+                        updateSettingsList()
                     }
                 ))
+                if (pendingClusterTurnCardOverlay ?: settings.clusterTurnCardOverlay) {
+                    choice("clusterTurnCardPosition", R.string.cluster_turn_card_position,
+                        arrayOf(
+                            getString(R.string.cluster_pos_left),
+                            getString(R.string.cluster_pos_center),
+                            getString(R.string.cluster_pos_right)
+                        ),
+                        pendingClusterTurnCardPosition ?: settings.clusterTurnCardPosition
+                    ) {
+                        pendingClusterTurnCardPosition = it
+                        checkChanges()
+                    }
+                }
                 choice("clusterMapSize", R.string.cluster_map_size,
                     arrayOf(getString(R.string.cluster_map_size_normal), getString(R.string.cluster_map_size_large)),
                     pendingClusterMapSize ?: 0) { pendingClusterMapSize = it }

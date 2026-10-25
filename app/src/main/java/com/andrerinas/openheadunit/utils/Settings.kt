@@ -150,6 +150,11 @@ class Settings(private val context: Context) {
     var clusterTurnCardOverlay: Boolean
         get() = prefs.getBoolean("cluster-turn-card-overlay", true)
         set(value) { prefs.edit().putBoolean("cluster-turn-card-overlay", value).apply() }
+
+    /** Turn card position on instrument cluster: 0 = Sol (Left), 1 = Ortala (Center), 2 = Sağ (Right) */
+    var clusterTurnCardPosition: Int
+        get() = prefs.getInt("cluster-turn-card-position", 0)
+        set(value) { prefs.edit().putInt("cluster-turn-card-position", value).apply() }
     // Traffic side for BYD cluster/HUD roundabouts. Legacy Android Auto turn events carry the exit
     // number but not the circulation direction, which the cluster needs to show that exit.
     // false = traffic keeps right (counter-clockwise roundabouts), the common case.

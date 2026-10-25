@@ -80,7 +80,8 @@ internal class ClusterTurnCardView(context: Context) : View(context) {
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         val next = guidance ?: return
-        val card = ClusterTurnCardPlacement.card(width, height, plan) ?: return
+        val pos = try { com.andrerinas.openheadunit.App.provide(context).settings.clusterTurnCardPosition } catch (_: Exception) { 0 }
+        val card = ClusterTurnCardPlacement.card(width, height, plan, pos) ?: return
         val h = card.height.toFloat()
         val w = card.width.toFloat()
         val radius = h * 0.30f
@@ -194,17 +195,31 @@ internal object ClusterTurnCardPlacement {
 
     data class Box(val left: Int, val top: Int, val width: Int, val height: Int)
 
-    fun card(panelWidth: Int, panelHeight: Int, plan: ClusterMapConfig.Window?): Box? {
+    fun card(panelWidth: Int, panelHeight: Int, plan: ClusterMapConfig.Window?, positionMode: Int = 0): Box? {
         if (panelWidth <= 0 || panelHeight <= 0) return null
         val (width, centerX, centerY) = when {
             // Side window of Scenario/Simple: across the top of the narrow map.
             plan != null && !plan.fullMap ->
                 Triple(plan.width * 80 / 100, plan.left + plan.width / 2, plan.top + plan.height * 22 / 100)
-            // Full map: left of the marker, clear of the trip readouts shaded at the outer edges.
-            plan != null -> Triple(panelWidth * 16 / 100, panelWidth * 35 / 100, plan.top + plan.height * 25 / 100)
-            // DiLink 5.0 full panel: DiPlay's defaults (55 % of the clear centre, at 76 % / 30 %).
-            else -> Triple(panelWidth * (100 - SAFE_LEFT - SAFE_RIGHT) / 100 * 55 / 100,
-                panelWidth * 76 / 100, panelHeight * 30 / 100)
+            // Full map:
+            plan != null -> {
+                val cx = when (positionMode) {
+                    0 -> panelWidth * 18 / 100 // Sol
+                    1 -> panelWidth * 50 / 100 // Ortala
+                    else -> panelWidth * 35 / 100 // Sağ
+                }
+                Triple(panelWidth * 16 / 100, cx, plan.top + plan.height * 25 / 100)
+            }
+            // DiLink 5.0 full panel (BYD Seal U DM-i):
+            else -> {
+                val cx = when (positionMode) {
+                    0 -> panelWidth * 22 / 100 // Sol (sürücü ekranı sembollerinden uzak!)
+                    1 -> panelWidth * 50 / 100 // Ortala
+                    else -> panelWidth * 76 / 100 // Sağ (DiPlay orijinali)
+                }
+                Triple(panelWidth * (100 - SAFE_LEFT - SAFE_RIGHT) / 100 * 55 / 100,
+                    cx, panelHeight * 30 / 100)
+            }
         }
         val cardWidth = width.coerceIn(150, panelWidth)
         val cardHeight = (cardWidth / ASPECT).toInt().coerceAtLeast(58).coerceAtMost(panelHeight)
