@@ -17,14 +17,7 @@ object BydNavigationOutputs {
     @Volatile internal var syntheticHold = false
     private var initialized = false
 
-    fun available(context: Context): Boolean = Build.VERSION.SDK_INT >= 28 &&
-        (BydStandaloneHudOutput.available(context) ||
-         clusterPackage(context) != null ||
-         installed(context, "com.ts.car.someip.service") ||
-         Build.MANUFACTURER.contains("BYD", ignoreCase = true) ||
-         Build.BRAND.contains("BYD", ignoreCase = true) ||
-         Build.FINGERPRINT.contains("BYD", ignoreCase = true) ||
-         true /* BYD Seal U DM-i: HUD ve Sürücü Ekranı ayarları her zaman göster */)
+    fun available(context: Context): Boolean = true
 
     private fun clusterPackage(context: Context): String? = BydClusterOutput.PACKAGES.firstOrNull { installed(context, it) }
 
