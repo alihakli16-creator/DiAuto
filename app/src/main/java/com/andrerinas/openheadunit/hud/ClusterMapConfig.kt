@@ -145,6 +145,7 @@ internal object ClusterMapConfig {
     fun profile(
         size: Size, detail: Detail, markerX: Int, markerY: Int,
         width: Width = Width.COMPACT, window: Window? = null,
+        hideGoogleCard: Boolean = false,
     ): Profile {
         // Keep the panel's 8:3 shape inside the codec frame; the rest is margin.
         val contentWidth = size.codecWidth
@@ -162,7 +163,7 @@ internal object ClusterMapConfig {
             // and shows less area around the car. Left unscaled on the LARGE stream on purpose:
             // its 1.5x enlargement then makes everything 1.5x larger, which is what LARGE is for.
             density = detail.dpi,
-            contentInsets = insets(contentWidth, contentHeight, markerX, markerY, width, window),
+            contentInsets = insets(contentWidth, contentHeight, markerX, markerY, width, window, hideGoogleCard),
         )
     }
 
@@ -173,12 +174,13 @@ internal object ClusterMapConfig {
      */
     fun insets(
         contentWidth: Int, contentHeight: Int, markerX: Int, markerY: Int, width: Width = Width.COMPACT,
-        window: Window? = null,
+        window: Window? = null, hideGoogleCard: Boolean = false,
     ): Insets {
         val dx = markerX.coerceIn(HORIZONTAL_STEPS) * STEP_PERCENT
         val dy = markerY.coerceIn(VERTICAL_STEPS) * STEP_PERCENT
         val base = basePercent(width, window)
-        val (left, right) = shift(base.left, base.right, dx)
+        val extraRight = if (hideGoogleCard) 18 else 0
+        val (left, right) = shift(base.left, (base.right + extraRight).coerceAtMost(80), dx)
         val (top, bottom) = shift(base.top, base.bottom, dy)
         return Insets(
             top = contentHeight * top / 100,

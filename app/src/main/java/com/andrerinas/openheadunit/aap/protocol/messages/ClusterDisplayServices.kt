@@ -23,6 +23,7 @@ internal object ClusterDisplayServices {
         settings.clusterMarkerY,
         ClusterMapConfig.Width.of(settings.clusterMapWidth),
         window(context, settings),
+        settings.clusterHideGoogleNavCard,
     )
 
     /**

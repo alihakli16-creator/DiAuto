@@ -19,16 +19,23 @@ internal class BydStandaloneHudOutput private constructor(context: Context) {
             // 1. Send targeted broadcast if com.byd.clusterdebug is available
             try {
                 app.sendBroadcast(Intent("byd.hud.NAVIGATION").setComponent(TARGET)
-                    .putExtra("normal", packet).addFlags(Intent.FLAG_RECEIVER_FOREGROUND))
+                    .putExtra("normal", packet).addFlags(Intent.FLAG_RECEIVER_FOREGROUND or 0x01000000))
             } catch (e: Exception) {
                 Log.d(TAG, "Targeted HUD broadcast error: ${e.message}")
             }
             // 2. Also send implicit broadcast for any listening HUD / CAN receiver
             try {
                 app.sendBroadcast(Intent("byd.hud.NAVIGATION")
-                    .putExtra("normal", packet).addFlags(Intent.FLAG_RECEIVER_FOREGROUND))
+                    .putExtra("normal", packet).addFlags(Intent.FLAG_RECEIVER_FOREGROUND or 0x01000000))
             } catch (e: Exception) {
                 Log.d(TAG, "Implicit HUD broadcast error: ${e.message}")
+            }
+            // 3. Send BYD stock CAN/HUD broadcast action
+            try {
+                app.sendBroadcast(Intent("com.byd.action.HUD_NAVIGATION")
+                    .putExtra("normal", packet).addFlags(Intent.FLAG_RECEIVER_FOREGROUND or 0x01000000))
+            } catch (e: Exception) {
+                Log.d(TAG, "Stock HUD broadcast error: ${e.message}")
             }
             Log.d(TAG, "dispatch uid=${Process.myUid()} bytes=${packet.split(',').size}")
         },
