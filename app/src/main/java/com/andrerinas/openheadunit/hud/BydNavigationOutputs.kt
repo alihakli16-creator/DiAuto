@@ -18,7 +18,13 @@ object BydNavigationOutputs {
     private var initialized = false
 
     fun available(context: Context): Boolean = Build.VERSION.SDK_INT >= 28 &&
-        (BydStandaloneHudOutput.available(context) || clusterPackage(context) != null || installed(context, "com.ts.car.someip.service"))
+        (BydStandaloneHudOutput.available(context) ||
+         clusterPackage(context) != null ||
+         installed(context, "com.ts.car.someip.service") ||
+         Build.MANUFACTURER.contains("BYD", ignoreCase = true) ||
+         Build.BRAND.contains("BYD", ignoreCase = true) ||
+         Build.FINGERPRINT.contains("BYD", ignoreCase = true) ||
+         true /* BYD Seal U DM-i: HUD ve Sürücü Ekranı ayarları her zaman göster */)
 
     private fun clusterPackage(context: Context): String? = BydClusterOutput.PACKAGES.firstOrNull { installed(context, it) }
 
@@ -26,11 +32,13 @@ object BydNavigationOutputs {
         runCatching { context.packageManager.getPackageInfo(pkg, 0) }.isSuccess
 
     @Synchronized fun start(context: Context) {
-        Log.i("DiAuto-BYD", "start enabled=${Settings(context).bydNavigationEnabled} cluster=${clusterPackage(context)} hud=${installed(context, "com.ts.car.someip.service")}")
-        active = true
-        if (initialized || !available(context)) return
-        initialized = true
         val app = context.applicationContext
+        Log.i("DiAuto-BYD", "start enabled=${Settings(app).bydNavigationEnabled} cluster=${clusterPackage(app)} hud=${installed(app, "com.ts.car.someip.service")}")
+        active = true
+        if (initialized || !available(app)) return
+        initialized = true
+
+        // 1. Standalone CAN HUD broadcast (distance, turn, street name)
         if (BydStandaloneHudOutput.available(app)) {
             var standalone: BydStandaloneHudOutput? = null
             schedule("diauto-standalone-navi", app, repeatNs = 1_000_000_000L) { value ->
@@ -38,12 +46,26 @@ object BydNavigationOutputs {
                 if (value == null) output?.clear()
                 else output?.update(value.clusterIcon, value.roundaboutExit, value.distanceMeters, value.road)
             }
-            return // This firmware has one validated windshield transport.
         }
+
+        // 2. Direct BYD Auto Instrument Device HAL
+        try {
+            val factory = BydFactoryNavigationOutput(app)
+            schedule("diauto-factory-navi", app, repeatNs = 1_000_000_000L) { value ->
+                if (value == null) factory.clear()
+                else factory.update(value.clusterIcon, value.roundaboutExit, value.distanceMeters)
+            }
+        } catch (e: Exception) {
+            Log.d("DiAuto-BYD", "Factory navigation schedule skipped: ${e.message}")
+        }
+
+        // 3. Cluster AutoNavi Broadcast
         clusterPackage(app)?.let { target ->
             val cluster = BydClusterOutput(app, target)
             schedule("diauto-cluster", app, cluster::update)
         }
+
+        // 4. SOME/IP HUD Service
         if (installed(app, "com.ts.car.someip.service")) {
             var hudInitialized = false
             schedule("diauto-hud", app) { value ->

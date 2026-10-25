@@ -112,7 +112,7 @@ class Settings(private val context: Context) {
         }
 
     var bydNavigationEnabled: Boolean
-        get() = prefs.getBoolean("byd-navigation-enabled", false)
+        get() = prefs.getBoolean("byd-navigation-enabled", true)
         set(value) { prefs.edit().putBoolean("byd-navigation-enabled", value).apply() }
 
     // Instrument-cluster ("dashboard") map from Android Auto. Declared to the phone at connection

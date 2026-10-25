@@ -2,9 +2,7 @@ name: Publish download site
 on:
   push:
     branches: [main]
-    paths: ['site/**', 'scripts/build_site.py', 'scripts/download_count.py', '.github/workflows/pages.yml']
-  schedule:
-    - cron: '23 * * * *' # refresh the download count
+    paths: ['site/**', 'scripts/build_site.py', '.github/workflows/pages.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -22,9 +20,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python3 scripts/build_site.py
-      - run: python3 scripts/download_count.py
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

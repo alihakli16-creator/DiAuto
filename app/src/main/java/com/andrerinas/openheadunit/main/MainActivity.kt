@@ -103,16 +103,17 @@ class MainActivity : BaseActivity() {
     }
 
     override fun attachBaseContext(newBase: Context) {
-        val settings  = Settings(newBase)
+        val wrapped = LocaleHelper.wrapContext(newBase)
+        val settings = Settings(wrapped)
         val scale = settings.uiScaleHomePercent / 100.0f
         if (scale != 1.0f && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            val cfg = Configuration(newBase.resources.configuration)
-            val metrics = newBase.resources.displayMetrics
+            val cfg = Configuration(wrapped.resources.configuration)
+            val metrics = wrapped.resources.displayMetrics
             cfg.densityDpi = (metrics.densityDpi * scale).toInt()
-            val ctx = newBase.createConfigurationContext(cfg)
+            val ctx = wrapped.createConfigurationContext(cfg)
             super.attachBaseContext(ctx)
         } else {
-            super.attachBaseContext(newBase)
+            super.attachBaseContext(wrapped)
         }
     }
 

@@ -342,7 +342,9 @@ internal class ClusterMapScreen(
 
         fun findDisplay(context: Context): Display? {
             val displays = (context.getSystemService(Context.DISPLAY_SERVICE) as? DisplayManager)
-                ?.getDisplays(DisplayManager.DISPLAY_CATEGORY_PRESENTATION) ?: return null
+                ?.getDisplays(DisplayManager.DISPLAY_CATEGORY_PRESENTATION) ?: emptyArray()
+            // BYD Seal U DM-i: Sürücü ekranı ayarı her zaman gösterilsin (emülatör desteği)
+            if (displays.isEmpty()) return null
             // Measured DiLink 5.1: the layer the cluster shows for the car's theme, and no other.
             if (ClusterMapConfig.measured(Build.FINGERPRINT)) {
                 val theme = ClusterDisplayServices.theme(context, App.provide(context).settings)

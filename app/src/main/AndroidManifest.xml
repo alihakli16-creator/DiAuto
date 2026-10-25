@@ -15,6 +15,15 @@
         <package android:name="com.example.amapservice" />
         <package android:name="com.ts.car.someip.service" />
         <package android:name="com.google.android.projection.gearhead" />
+        <package android:name="com.byd.automap" />
+        <package android:name="com.byd.navigation" />
+        <package android:name="com.autonavi.amapauto" />
+        <intent>
+            <action android:name="byd.hud.NAVIGATION" />
+        </intent>
+        <intent>
+            <action android:name="AUTONAVI_STANDARD_BROADCAST_SEND" />
+        </intent>
     </queries>
 
     <uses-feature

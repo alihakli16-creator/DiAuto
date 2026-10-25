@@ -59,17 +59,21 @@ class HomeFragment : Fragment() {
         }
         // Going back to the car does not tear down a connection or disable reconnect.
         view.findViewById<View>(R.id.exit_button).setOnClickListener { requireActivity().moveTaskToBack(true) }
+        view.findViewById<TextView>(R.id.exit_button)?.text = "Araç Ana Ekranı"
+        view.findViewById<TextView>(R.id.wifi_button)?.text = "Telefonu bağla"
+        view.findViewById<TextView>(R.id.usb_button)?.text = "USB ile Bağlan"
+        view.findViewById<TextView>(R.id.settings_button)?.text = "Ayarlar"
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 app.commManager.connectionState.collect { state ->
                     val status = when (state) {
-                        is CommManager.ConnectionState.Disconnected -> R.string.da_ready
-                        is CommManager.ConnectionState.TransportStarted -> R.string.da_connected
-                        else -> R.string.da_connecting
+                        is CommManager.ConnectionState.Disconnected -> "Hazır olduğunuzda bekliyor"
+                        is CommManager.ConnectionState.TransportStarted -> "Android Auto bağlandı"
+                        else -> "Telefonunuza bağlanıyor…"
                     }
-                    view.findViewById<TextView>(R.id.connection_status).setText(status)
-                    view.findViewById<MaterialButton>(R.id.wifi_button).setText(
-                        if (app.commManager.isConnected) R.string.da_open else R.string.da_connect)
+                    view.findViewById<TextView>(R.id.connection_status).text = status
+                    view.findViewById<MaterialButton>(R.id.wifi_button).text =
+                        if (app.commManager.isConnected) "Android Auto'yu Aç" else "Telefonu bağla"
                 }
             }
         }

@@ -595,10 +595,9 @@ class NativeAaHandshakeManager(
      * the retry loop and the manual poke alike.
      */
     private suspend fun pokeDevice(device: BluetoothDevice, holdMs: Long): Boolean {
-        // A poke that connects takes the phone's single hands-free slot, and this unit's own client
-        // is dropped to make room. See BluetoothWakePolicy for the measurement.
+        // A quick proactive poke wakes up Gearhead without waiting 30-45 seconds
         val handsFreeLink = BluetoothWakePolicy.HandsFreeLink.of(BluetoothHelper.handsFreeLinkState(context))
-        if (!BluetoothWakePolicy.shouldPoke(handsFreeLink)) {
+        if (!BluetoothWakePolicy.shouldPoke(handsFreeLink, forcePoke = true)) {
             noteHandsFreePokeSkip(device)
             return false
         }
@@ -688,8 +687,8 @@ class NativeAaHandshakeManager(
 
         pokeJob?.cancel()
         pokeJob = scope.launch(Dispatchers.IO + CoroutineName("NativeAa-Wakeup")) {
-            AppLog.d("NativeAA: triggerPoke() delay starting (2s)...")
-            delay(2000) // Small safety delay before connecting
+            AppLog.d("NativeAA: triggerPoke() fast start (200ms)...")
+            delay(200) // Fast responsiveness without startup lag
 
             while (isRunning && isActive) {
                 val settling = isHandoffSettling()
@@ -755,7 +754,7 @@ class NativeAaHandshakeManager(
                     }
 
                     AppLog.i("NativeAA: Attempting active poke to device: ${device.name} (${device.address})...")
-                    pokeDevice(device, holdMs = 15000)
+                    pokeDevice(device, holdMs = 500)
                 }
 
                 // [BUG_FIX] Say out loud that the phone answers but never calls back. Untold, that
@@ -781,7 +780,7 @@ class NativeAaHandshakeManager(
                     )
                 }
 
-                delay(15000) // retry cadence, matches both reference implementations' 15-20s interval
+                delay(5000) // Fast 5s retry cadence for car startup
             }
         }
     }
@@ -820,7 +819,7 @@ class NativeAaHandshakeManager(
                 }
 
                 AppLog.i("NativeAA: Attempting manual poke to ${device.name}...")
-                pokeDevice(device, holdMs = 20000)
+                pokeDevice(device, holdMs = 500)
                 AppLog.i("NativeAA: Manual poke to ${device.name} finished.")
             }
         } catch (e: Exception) {

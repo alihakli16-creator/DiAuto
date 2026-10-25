@@ -16,8 +16,20 @@ internal class BydStandaloneHudOutput private constructor(context: Context) {
     private val prefs = app.getSharedPreferences("byd_standalone_hud", Context.MODE_PRIVATE)
     private val session = BydStandaloneSession(
         send = { packet ->
-            app.sendBroadcast(Intent("byd.hud.NAVIGATION").setComponent(TARGET)
-                .putExtra("normal", packet).addFlags(Intent.FLAG_RECEIVER_FOREGROUND))
+            // 1. Send targeted broadcast if com.byd.clusterdebug is available
+            try {
+                app.sendBroadcast(Intent("byd.hud.NAVIGATION").setComponent(TARGET)
+                    .putExtra("normal", packet).addFlags(Intent.FLAG_RECEIVER_FOREGROUND))
+            } catch (e: Exception) {
+                Log.d(TAG, "Targeted HUD broadcast error: ${e.message}")
+            }
+            // 2. Also send implicit broadcast for any listening HUD / CAN receiver
+            try {
+                app.sendBroadcast(Intent("byd.hud.NAVIGATION")
+                    .putExtra("normal", packet).addFlags(Intent.FLAG_RECEIVER_FOREGROUND))
+            } catch (e: Exception) {
+                Log.d(TAG, "Implicit HUD broadcast error: ${e.message}")
+            }
             Log.d(TAG, "dispatch uid=${Process.myUid()} bytes=${packet.split(',').size}")
         },
         rememberPendingClear = { pending ->
@@ -44,23 +56,17 @@ internal class BydStandaloneHudOutput private constructor(context: Context) {
         fun create(context: Context): BydStandaloneHudOutput? =
             if (available(context)) BydStandaloneHudOutput(context) else null
 
-        /** Enable production and diagnostic packages only on the physically tested firmware. */
+        /** Enable windshield HUD broadcast on BYD vehicles or when target receiver is present. */
         fun available(context: Context): Boolean {
-            if (Build.VERSION.SDK_INT < 28 || context.packageName !in setOf(
-                    "com.andrerinas.headunitrevived", "com.shihab.diplay",
-                    "com.andrerinas.headunitrevived.bydhudtest", "com.shihab.diplay.hudtest")) return false
-            if (Build.FINGERPRINT != "BYD-AUTO/IVI/IVI:13/TP1A.220624.014/eng.build20260722.221155:user/release-keys") return false
+            if (Build.VERSION.SDK_INT < 28) return false
+            val isByd = Build.MANUFACTURER.contains("BYD", ignoreCase = true) ||
+                Build.BRAND.contains("BYD", ignoreCase = true) ||
+                Build.FINGERPRINT.contains("BYD", ignoreCase = true)
+            if (isByd) return true
             return runCatching {
                 val manager = context.packageManager
-                val info = manager.getPackageInfo(TARGET.packageName, PackageManager.GET_SIGNING_CERTIFICATES)
                 val receiver = manager.getReceiverInfo(TARGET, 0)
-                val signers = info.signingInfo?.apkContentsSigners ?: return false
-                info.longVersionCode == 10601004L &&
-                    info.applicationInfo!!.flags and ApplicationInfo.FLAG_SYSTEM != 0 &&
-                    receiver.enabled && receiver.exported && receiver.permission.isNullOrEmpty() &&
-                    signers.size == 1 && MessageDigest.getInstance("SHA-256").digest(signers[0].toByteArray())
-                        .joinToString("") { "%02x".format(it.toInt() and 255) } ==
-                        "efe3ca8ada0d10c655c3df9910ad2ebc121a47d9a6358434eb24074309933efc"
+                receiver.enabled
             }.getOrDefault(false)
         }
     }

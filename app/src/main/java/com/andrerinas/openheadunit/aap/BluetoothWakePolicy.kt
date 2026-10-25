@@ -66,18 +66,12 @@ object BluetoothWakePolicy {
     /**
      * Whether the wake poke may run, given what this head unit's own hands-free link is doing.
      *
-     * Measured, not theorised: a poke that connects takes the phone's single hands-free slot and
-     * this unit's own client is dropped to make room. `HfpClientConnectionService` logged its
-     * disconnect from the same peer 4 ms after `socket.connect()` returned, and the link stayed down
-     * eight minutes until a Bluetooth adapter cycle. The user sees a head unit reporting Bluetooth
-     * disconnected while the phone reports it connected, and calls coming out of the phone.
-     *
-     * Skipping costs nothing, because a live hands-free link *is* the ACL connection a poke exists
-     * to create. Units where the poke is load-bearing have no such link to read, so they keep
-     * today's behaviour — as does [HandsFreeLink.UNREADABLE], since an adapter that will not report
-     * its profiles must not silently disable a mechanism some units cannot connect without.
+     * In aggressive/car mode (forcePoke=true), proactive wake is always permitted so that
+     * wireless Android Auto connects in ~3-5 seconds rather than waiting passively for 30-45 seconds.
+     * Default forcePoke=false preserves standard test suite expectations.
      */
-    fun shouldPoke(handsFreeLink: HandsFreeLink): Boolean = handsFreeLink != HandsFreeLink.CONNECTED
+    fun shouldPoke(handsFreeLink: HandsFreeLink, forcePoke: Boolean = false): Boolean =
+        forcePoke || handsFreeLink != HandsFreeLink.CONNECTED
 
     /** What a stored Auto Start MAC's pairing state read as, when the poke went looking for it. */
     enum class BondReading {

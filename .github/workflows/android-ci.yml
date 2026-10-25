@@ -1,6 +1,7 @@
 name: Android CI
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches: [ main ]
@@ -61,12 +62,12 @@ jobs:
       - name: Assemble github debug APK
         run: ./gradlew :app:testGithubDebugUnitTest :app:assembleGithubDebug :app:assembleGithubRelease --stacktrace
 
-      - name: Upload debug APK
+      - name: Upload APKs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: diauto-review-apk
-          path: app/build/outputs/apk/github/debug/*.apk
+          name: diauto-sealu-apks
+          path: app/build/outputs/apk/github/*/*.apk
           if-no-files-found: warn
 
   unit-test:
