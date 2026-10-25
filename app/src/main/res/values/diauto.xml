@@ -41,4 +41,10 @@
     <string name="da_settings_subtitle">Ekranınızı, sesinizi ve bağlantınızı özelleştirin.</string>
     <string name="da_bluetooth_music">Müziği araç Bluetooth\'u üzerinden çal</string>
     <string name="da_bluetooth_music_hint">Müzik sesini aracın kendi Bluetooth oynatıcısına bırakın. DiAuto ses odağını serbest bırakır; navigasyon ve asistan sesleri çalışmaya devam eder. Bunu değiştirdikten sonra Android Auto\'yu yeniden bağlayın.</string>
+    <string name="da_quick_bt_title">BLUETOOTH BAĞLANTISI</string>
+    <string name="da_quick_bt_hint">Bağlanmak için dokunun</string>
+    <string name="da_quick_no_device">Eşleşmiş telefon yok</string>
+    <string name="da_quick_pair_hint">Telefonunuzu araçla eşleştirin</string>
+    <string name="da_quick_btn_connect">Bağlan</string>
+    <string name="da_quick_btn_pair">Eşleştir</string>
 </resources>
