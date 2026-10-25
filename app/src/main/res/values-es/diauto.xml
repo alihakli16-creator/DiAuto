@@ -35,4 +35,10 @@
     <string name="da_settings_subtitle">Ajusta la pantalla, el sonido y la conexión.</string>
     <string name="da_bluetooth_music">Música por Bluetooth del coche</string>
     <string name="da_bluetooth_music_hint">Mantén la música en el reproductor Bluetooth del coche. DiAuto no modifica su foco de audio; el sonido de navegación y del asistente sigue disponible. Vuelve a conectar Android Auto tras cambiar esta opción.</string>
+    <string name="da_quick_bt_title">CONEXIÓN BLUETOOTH</string>
+    <string name="da_quick_bt_hint">Toca para conectar</string>
+    <string name="da_quick_no_device">No hay teléfono emparejado</string>
+    <string name="da_quick_pair_hint">Empareja tu teléfono con el coche</string>
+    <string name="da_quick_btn_connect">Conectar</string>
+    <string name="da_quick_btn_pair">Emparejar</string>
 </resources>

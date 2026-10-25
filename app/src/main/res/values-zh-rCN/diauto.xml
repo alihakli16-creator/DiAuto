@@ -35,4 +35,10 @@
     <string name="da_settings_subtitle">调整显示、声音和连接。</string>
     <string name="da_bluetooth_music">通过车辆蓝牙播放音乐</string>
     <string name="da_bluetooth_music_hint">让音乐通过车辆蓝牙播放器播放。DiAuto 不改变其音频焦点；导航和助手音频仍可使用。更改此选项后请重新连接 Android Auto。</string>
+    <string name="da_quick_bt_title">蓝牙连接</string>
+    <string name="da_quick_bt_hint">点击连接</string>
+    <string name="da_quick_no_device">未找到已配对手机</string>
+    <string name="da_quick_pair_hint">请将手机与车辆配对</string>
+    <string name="da_quick_btn_connect">连接</string>
+    <string name="da_quick_btn_pair">配对</string>
 </resources>

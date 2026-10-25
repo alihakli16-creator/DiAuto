@@ -35,4 +35,10 @@
     <string name="da_settings_subtitle">Настройте экран, звук и подключение.</string>
     <string name="da_bluetooth_music">Музыка через Bluetooth автомобиля</string>
     <string name="da_bluetooth_music_hint">Оставьте музыку в Bluetooth-проигрывателе автомобиля. DiAuto не меняет его аудиофокус; звук навигации и ассистента остаётся доступен. После изменения переподключите Android Auto.</string>
+    <string name="da_quick_bt_title">ПОДКЛЮЧЕНИЕ BLUETOOTH</string>
+    <string name="da_quick_bt_hint">Нажмите для подключения</string>
+    <string name="da_quick_no_device">Нет сопряженного телефона</string>
+    <string name="da_quick_pair_hint">Сопрягите телефон с автомобилем</string>
+    <string name="da_quick_btn_connect">Подключить</string>
+    <string name="da_quick_btn_pair">Сопряжение</string>
 </resources>
