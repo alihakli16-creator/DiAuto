@@ -86,7 +86,26 @@ internal object BydNavigationMapper {
             cachedEta = formatEta(now, cachedRemainingSeconds)
         }
 
-        return BydGuidance(codes.cluster, codes.gaode, codes.arrow, codes.exit, distance, road, cachedRemainingMeters, cachedRemainingSeconds, cachedEta)
+        val nextStep = snapshot.navigationState?.payload?.stepsList?.getOrNull(1)
+        val nextRoad = nextStep?.takeIf { it.hasRoad() && it.road.hasName() }?.road?.name?.takeIf { it.isNotBlank() }.orEmpty()
+        val nextModern = nextStep?.takeIf { it.hasManeuver() && it.maneuver.hasType() }?.maneuver
+        val nextType = nextModern?.type?.number ?: 0
+        val nextCodes = if (nextType > 0) codes(nextType, nextModern?.roundaboutExitNumber ?: 0) else null
+        val nextClusterIcon = nextCodes?.cluster ?: 0
+
+        return BydGuidance(
+            codes.cluster,
+            codes.gaode,
+            codes.arrow,
+            codes.exit,
+            distance,
+            road,
+            cachedRemainingMeters,
+            cachedRemainingSeconds,
+            cachedEta,
+            nextRoad,
+            nextClusterIcon
+        )
     }
 
     fun parseEta(etaStr: String, nowMs: Long = System.currentTimeMillis()): Pair<String, Int> {

@@ -102,4 +102,26 @@ class BydNavigationMapperTest {
         assertEquals("08:15", cleanAm)
         assertTrue(secAm >= 0)
     }
+
+    @Test fun `next step road and cluster icon are mapped`() {
+        val step1 = N.NavigationStep.newBuilder()
+            .setManeuver(N.NavigationManeuver.newBuilder().setType(N.NavigationManeuver.NavigationType.TURN_NORMAL_LEFT))
+            .setRoad(N.NavigationRoad.newBuilder().setName("Current Road")).build()
+        val step2 = N.NavigationStep.newBuilder()
+            .setManeuver(N.NavigationManeuver.newBuilder().setType(N.NavigationManeuver.NavigationType.TURN_NORMAL_RIGHT))
+            .setRoad(N.NavigationRoad.newBuilder().setName("Boulevard Al Azhar")).build()
+        val state = N.NavigationState.newBuilder().addSteps(step1).addSteps(step2).build()
+        val snap = AapNavigationHelper.NavigationSnapshot().apply {
+            navigationState = AapNavigationHelper.TimedMessage(state, 0)
+            currentPosition = AapNavigationHelper.TimedMessage(
+                N.NavigationCurrentPosition.newBuilder().setStepDistance(N.NavigationStepDistance.newBuilder()
+                    .setDistance(N.NavigationDistance.newBuilder().setMeters(200))).build(), 0)
+        }
+        val guidance = BydNavigationMapper.from(snap)!!
+        assertEquals("Current Road", guidance.road)
+        assertEquals(2, guidance.clusterIcon)
+        assertEquals(200, guidance.distanceMeters)
+        assertEquals("Boulevard Al Azhar", guidance.nextRoad)
+        assertEquals(3, guidance.nextClusterIcon)
+    }
 }
