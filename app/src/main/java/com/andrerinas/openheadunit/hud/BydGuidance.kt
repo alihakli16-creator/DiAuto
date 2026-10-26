@@ -10,5 +10,6 @@ internal data class BydGuidance(
     val road: String,
     val remainingMeters: Int = -1,
     val remainingSeconds: Int = -1,
+    val eta: String = "",
     val updatedNs: Long = System.nanoTime(),
 )

@@ -44,6 +44,8 @@ class AapNavigation(
                 clearAccumulatedData()
                 scheduleDebouncedBroadcast(NAV_EVENT_TYPE_STOP)
                 helper.cancelNotification()
+                com.andrerinas.openheadunit.hud.BydNavigationMapper.reset()
+                com.andrerinas.openheadunit.hud.DashboardGuidance.latest = null
                 true
             }
             NavigationStatus.MsgType.INSTRUMENT_CLUSTER_NAVIGATION_STATUS_VALUE -> {
@@ -153,6 +155,7 @@ class AapNavigation(
         snapshot.navigationState = null
         snapshot.currentPosition = null
         snapshot.currentStreet = null
+        com.andrerinas.openheadunit.hud.BydNavigationMapper.reset()
     }
 
     private fun clearAccumulatedDataPreservingStatus(

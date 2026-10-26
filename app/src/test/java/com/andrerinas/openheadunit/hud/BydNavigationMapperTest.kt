@@ -89,4 +89,17 @@ class BydNavigationMapperTest {
             assertNull(BydNavigationMapper.from(value))
         }
     }
+    @Test fun `parseEta handles 24h and 12h formats`() {
+        val (clean24, sec24) = BydNavigationMapper.parseEta("23:28")
+        assertEquals("23:28", clean24)
+        assertTrue(sec24 >= 0)
+
+        val (cleanPm, secPm) = BydNavigationMapper.parseEta("11:28 PM")
+        assertEquals("23:28", cleanPm)
+        assertTrue(secPm >= 0)
+
+        val (cleanAm, secAm) = BydNavigationMapper.parseEta("08:15 AM")
+        assertEquals("08:15", cleanAm)
+        assertTrue(secAm >= 0)
+    }
 }

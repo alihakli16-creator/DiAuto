@@ -2,11 +2,23 @@ package com.andrerinas.openheadunit.hud
 
 import com.andrerinas.openheadunit.aap.AapNavigationHelper.NavigationSnapshot
 import com.andrerinas.openheadunit.aap.protocol.proto.NavigationStatus
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 internal object BydNavigationMapper {
     @Volatile private var cachedRemainingMeters = -1
     @Volatile private var cachedRemainingSeconds = -1
+    @Volatile private var cachedEta = ""
     @Volatile private var lastRemainingTimestampMs = 0L
+
+    fun reset() {
+        cachedRemainingMeters = -1
+        cachedRemainingSeconds = -1
+        cachedEta = ""
+        lastRemainingTimestampMs = 0L
+    }
 
     /**
      * @param leftHandTraffic the "traffic keeps left" setting. Legacy turn events carry no
@@ -16,8 +28,7 @@ internal object BydNavigationMapper {
     fun from(snapshot: NavigationSnapshot, leftHandTraffic: Boolean = false): BydGuidance? {
         val status = snapshot.clusterStatus?.payload?.status
         if (status != null && status != NavigationStatus.NavigationClusterStatus.NavigationStatusEnum.ACTIVE) {
-            cachedRemainingMeters = -1
-            cachedRemainingSeconds = -1
+            reset()
             return null
         }
         val step = snapshot.navigationState?.payload?.stepsList?.firstOrNull()
@@ -36,23 +47,88 @@ internal object BydNavigationMapper {
         if (distance < 0) return null
         val road = step?.takeIf { it.hasRoad() && it.road.hasName() }?.road?.name?.takeIf { it.isNotBlank() }
             ?: legacy?.road?.takeIf { it.isNotBlank() } ?: snapshot.currentStreet?.payload.orEmpty()
-        val destination = position?.destinationDistancesList?.firstOrNull()
+        val destination = position?.destinationDistancesList?.lastOrNull()
+            ?: position?.destinationDistancesList?.firstOrNull()
         val rawRemaining = destination?.takeIf { it.hasDistance() && it.distance.hasMeters() }?.distance?.meters ?: -1
-        val rawSeconds = destination?.takeIf { it.hasTimeToArrivalSeconds() }?.timeToArrivalSeconds
+        var rawSeconds = destination?.takeIf { it.hasTimeToArrivalSeconds() }?.timeToArrivalSeconds
             ?.coerceIn(0, Int.MAX_VALUE.toLong())?.toInt() ?: -1
+        val rawEta = destination?.takeIf { it.hasEstimatedTimeAtArrival() }?.estimatedTimeAtArrival?.trim().orEmpty()
 
         val now = System.currentTimeMillis()
+        var normalizedEta = ""
+
+        if (rawEta.isNotBlank()) {
+            val (cleanEta, parsedSec) = parseEta(rawEta, now)
+            normalizedEta = cleanEta
+            if (rawSeconds <= 0 && parsedSec > 0) {
+                rawSeconds = parsedSec
+            }
+        }
+
+        if (rawRemaining > 0) {
+            cachedRemainingMeters = rawRemaining
+        }
         if (rawSeconds > 0) {
             cachedRemainingSeconds = rawSeconds
-            cachedRemainingMeters = rawRemaining
             lastRemainingTimestampMs = now
+            if (normalizedEta.isBlank()) {
+                normalizedEta = formatEta(now, rawSeconds)
+            }
         } else if (cachedRemainingSeconds > 0 && now - lastRemainingTimestampMs < 120_000L) {
             val elapsedSec = ((now - lastRemainingTimestampMs) / 1000L).toInt()
             cachedRemainingSeconds = maxOf(0, cachedRemainingSeconds - elapsedSec)
             lastRemainingTimestampMs = now
         }
 
-        return BydGuidance(codes.cluster, codes.gaode, codes.arrow, codes.exit, distance, road, cachedRemainingMeters, cachedRemainingSeconds)
+        if (normalizedEta.isNotBlank()) {
+            cachedEta = normalizedEta
+        } else if (cachedRemainingSeconds > 0) {
+            cachedEta = formatEta(now, cachedRemainingSeconds)
+        }
+
+        return BydGuidance(codes.cluster, codes.gaode, codes.arrow, codes.exit, distance, road, cachedRemainingMeters, cachedRemainingSeconds, cachedEta)
+    }
+
+    fun parseEta(etaStr: String, nowMs: Long = System.currentTimeMillis()): Pair<String, Int> {
+        if (etaStr.isBlank()) return Pair("", -1)
+        try {
+            val match = Regex("""(\d{1,2})[:.](\d{2})""").find(etaStr) ?: return Pair(etaStr, -1)
+            var hour = match.groupValues[1].toIntOrNull() ?: return Pair(etaStr, -1)
+            val minute = match.groupValues[2].toIntOrNull() ?: return Pair(etaStr, -1)
+            if (hour !in 0..23 || minute !in 0..59) return Pair(etaStr, -1)
+
+            val lower = etaStr.lowercase(Locale.ROOT)
+            if ((lower.contains("pm") || lower.contains("ös") || lower.contains("ö.s.")) && hour < 12) {
+                hour += 12
+            } else if ((lower.contains("am") || lower.contains("öö") || lower.contains("ö.ö.")) && hour == 12) {
+                hour = 0
+            }
+
+            val cleanEta = String.format(Locale.getDefault(), "%02d:%02d", hour, minute)
+
+            val cal = Calendar.getInstance().apply { timeInMillis = nowMs }
+            val curHour = cal.get(Calendar.HOUR_OF_DAY)
+            val curMinute = cal.get(Calendar.MINUTE)
+            val curSecond = cal.get(Calendar.SECOND)
+
+            val curSec = curHour * 3600 + curMinute * 60 + curSecond
+            val targetSec = hour * 3600 + minute * 60
+
+            var diff = targetSec - curSec
+            if (diff < -120) {
+                diff += 86400
+            }
+            val seconds = if (diff >= 0) diff else 0
+            return Pair(cleanEta, seconds)
+        } catch (e: Exception) {
+            return Pair(etaStr, -1)
+        }
+    }
+
+    fun formatEta(nowMs: Long, seconds: Int): String {
+        if (seconds <= 0) return ""
+        val arrival = Date(nowMs + seconds * 1000L)
+        return SimpleDateFormat("HH:mm", Locale.getDefault()).format(arrival)
     }
 
     data class Codes(val cluster: Int, val gaode: Int, val arrow: Int, val exit: Int = 0)
