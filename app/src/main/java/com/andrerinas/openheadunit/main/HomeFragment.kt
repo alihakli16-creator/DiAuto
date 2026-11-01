@@ -43,11 +43,41 @@ class HomeFragment : Fragment() {
     private var activeDialog: androidx.appcompat.app.AlertDialog? = null
     private var primaryBluetoothDevice: BluetoothDevice? = null
     private var bydStockAAManager: BydStockAAManager? = null
+    private var isAutoConnecting = false
+
+    private fun attemptFastAutoConnect(device: BluetoothDevice) {
+        if (isAutoConnecting) return
+        if (app.commManager.isConnected) return
+        if (app.commManager.connectionState.value is CommManager.ConnectionState.Connecting) return
+
+        isAutoConnecting = true
+        view?.postDelayed({
+            if (isAdded && !app.commManager.isConnected && app.commManager.connectionState.value !is CommManager.ConnectionState.Connecting) {
+                connectToDevice(device)
+            } else {
+                isAutoConnecting = false
+            }
+        }, 150)
+    }
 
     private val bluetoothReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
-                BluetoothDevice.ACTION_ACL_CONNECTED,
+                BluetoothDevice.ACTION_ACL_CONNECTED -> {
+                    val device = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+                    }
+                    if (device != null) {
+                        val lastMac = app.settings.autoStartBluetoothDeviceMac
+                        if (lastMac.isEmpty() || device.address.equals(lastMac, ignoreCase = true)) {
+                            attemptFastAutoConnect(device)
+                        }
+                    }
+                    refreshBluetoothDevices()
+                }
                 BluetoothDevice.ACTION_ACL_DISCONNECTED,
                 BluetoothDevice.ACTION_BOND_STATE_CHANGED,
                 BluetoothAdapter.ACTION_STATE_CHANGED -> {
@@ -107,7 +137,10 @@ class HomeFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 app.commManager.connectionState.collect { state ->
                     val status = when (state) {
-                        is CommManager.ConnectionState.Disconnected -> R.string.da_ready
+                        is CommManager.ConnectionState.Disconnected -> {
+                            isAutoConnecting = false
+                            R.string.da_ready
+                        }
                         is CommManager.ConnectionState.TransportStarted -> R.string.da_connected
                         else -> R.string.da_connecting
                     }
@@ -118,9 +151,7 @@ class HomeFragment : Fragment() {
                 }
             }
         }
-        if (app.settings.autoStartOnBoot || app.settings.autoStartOnScreenOn) {
-            ContextCompat.startForegroundService(requireContext(), Intent(requireContext(), AapService::class.java))
-        }
+        ContextCompat.startForegroundService(requireContext(), Intent(requireContext(), AapService::class.java))
     }
 
     override fun onStart() {
@@ -180,6 +211,10 @@ class HomeFragment : Fragment() {
             openProjection()
             return
         }
+        if (app.commManager.connectionState.value is CommManager.ConnectionState.Connecting) {
+            return
+        }
+        isAutoConnecting = true
 
         app.settings.wifiConnectionMode = 3
         if (!WirelessScopePolicy.allowsWireless(app.settings.connectionModes)) {
@@ -284,14 +319,18 @@ class HomeFragment : Fragment() {
         }
 
         try {
-            adapter.getProfileProxy(requireContext(), object : BluetoothProfile.ServiceListener {
+            val profileListener = object : BluetoothProfile.ServiceListener {
                 override fun onServiceConnected(profile: Int, proxy: BluetoothProfile?) {
                     try {
                         val connected = proxy?.connectedDevices.orEmpty()
-                        if (connected.any { it.address.equals(target.address, ignoreCase = true) }) {
+                        val isConnected = connected.any { it.address.equals(target.address, ignoreCase = true) }
+                        if (isConnected) {
                             activity?.runOnUiThread {
-                                if (isAdded && !app.commManager.isConnected) {
-                                    statusView.text = "Bluetooth ile bağlı • Bağlanmak için dokunun"
+                                if (isAdded) {
+                                    if (!app.commManager.isConnected && app.commManager.connectionState.value !is CommManager.ConnectionState.Connecting) {
+                                        statusView.text = "Bluetooth bağlı • Otomatik bağlanıyor..."
+                                    }
+                                    attemptFastAutoConnect(target)
                                 }
                             }
                         }
@@ -301,7 +340,9 @@ class HomeFragment : Fragment() {
                     }
                 }
                 override fun onServiceDisconnected(profile: Int) {}
-            }, BluetoothProfile.A2DP)
+            }
+            adapter.getProfileProxy(requireContext(), profileListener, BluetoothProfile.A2DP)
+            adapter.getProfileProxy(requireContext(), profileListener, BluetoothProfile.HEADSET)
         } catch (_: Exception) {}
 
         val otherDevices = bonded.filter { it.address != target.address }

@@ -194,7 +194,7 @@ internal object ClusterTurnCardPlacement {
     // DiPlay's measured clear centre of a DiLink 5.0 cluster, in percent of the panel.
     private const val SAFE_LEFT = 35
     private const val SAFE_RIGHT = 36
-    private const val ASPECT = 2.1f
+    private const val ASPECT = 2.64f
 
     data class Box(val left: Int, val top: Int, val width: Int, val height: Int)
 
@@ -210,32 +210,23 @@ internal object ClusterTurnCardPlacement {
                 val cx = when (positionMode) {
                     0 -> panelWidth * 16 / 100 // Sol
                     1 -> panelWidth * 50 / 100 // Ortala
-                    else -> panelWidth * 35 / 100 // Sağ
+                    else -> panelWidth * 35 / 100 // Sağ (DiPlay orijinali)
                 }
-                val w = when (positionMode) {
-                    0 -> panelWidth * 25 / 100
-                    1 -> panelWidth * 22 / 100
-                    else -> panelWidth * 18 / 100
-                }
-                Triple(w, cx, plan.top + plan.height * 25 / 100)
+                Triple(panelWidth * 16 / 100, cx, plan.top + plan.height * 25 / 100)
             }
             // DiLink 5.0 full panel (BYD Seal U DM-i):
             else -> {
                 val cx = when (positionMode) {
-                    0 -> panelWidth * 16 / 100 // Sol (sürücü ekranı sembollerinden uzak!)
+                    0 -> panelWidth * 16 / 100 // Sol (sürücü ekranı sol gösterge boşluğu)
                     1 -> panelWidth * 50 / 100 // Ortala
                     else -> panelWidth * 76 / 100 // Sağ (DiPlay orijinali)
                 }
-                val w = when (positionMode) {
-                    0 -> panelWidth * 25 / 100 // Genişletilmiş Sol Kart (~480px)
-                    1 -> panelWidth * 22 / 100
-                    else -> panelWidth * (100 - SAFE_LEFT - SAFE_RIGHT) / 100 * 55 / 100
-                }
-                Triple(w, cx, panelHeight * 28 / 100)
+                val w = panelWidth * (100 - SAFE_LEFT - SAFE_RIGHT) / 100 * 55 / 100
+                Triple(w, cx, panelHeight * 30 / 100)
             }
         }
         val cardWidth = width.coerceIn(150, panelWidth)
-        val cardHeight = (cardWidth / ASPECT).toInt().coerceAtLeast(64).coerceAtMost(panelHeight)
+        val cardHeight = (cardWidth / ASPECT).toInt().coerceAtLeast(58).coerceAtMost(panelHeight)
         val left = (centerX - cardWidth / 2).coerceIn(0, panelWidth - cardWidth)
         val top = (centerY - cardHeight / 2).coerceIn(0, panelHeight - cardHeight)
         return Box(left, top, cardWidth, cardHeight)
