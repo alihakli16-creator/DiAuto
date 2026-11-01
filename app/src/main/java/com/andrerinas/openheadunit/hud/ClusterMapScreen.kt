@@ -73,7 +73,7 @@ internal class ClusterMapScreen(
             turnCard = ClusterTurnCardView(context).apply {
                 visibility = android.view.View.GONE
                 setPlan(mapWindow)
-                setNightMode(mapWindow == null || ClusterMapConfig.dark(ClusterDisplayServices.theme(context, settings)))
+                setNightMode(mapWindow != null && ClusterMapConfig.dark(ClusterDisplayServices.theme(context, settings)))
             }
             root.addView(turnCard, FrameLayout.LayoutParams(-1, -1))
         }

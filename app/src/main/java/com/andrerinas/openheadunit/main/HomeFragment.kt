@@ -146,9 +146,11 @@ class HomeFragment : Fragment() {
             val iv = v.findViewById<ImageView?>(R.id.iv_byd_aa_status_icon)
             val tv = v.findViewById<TextView?>(R.id.tv_byd_aa_button_text)
             val hint = v.findViewById<TextView?>(R.id.tv_byd_aa_hint)
-            bydStockAAManager?.updateButtonUI(btn, iv, tv, hint)
-            bydStockAAManager?.enforceAutoDisableIfNeeded {
+            if (btn != null && tv != null) {
                 bydStockAAManager?.updateButtonUI(btn, iv, tv, hint)
+                bydStockAAManager?.enforceAutoDisableIfNeeded {
+                    bydStockAAManager?.updateButtonUI(btn, iv, tv, hint)
+                }
             }
         }
     }
