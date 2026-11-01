@@ -29,10 +29,12 @@ import com.andrerinas.openheadunit.aap.AapProjectionActivity
 import com.andrerinas.openheadunit.aap.AapService
 import com.andrerinas.openheadunit.aap.WirelessScopePolicy
 import com.andrerinas.openheadunit.connection.CommManager
+import com.andrerinas.openheadunit.manager.BydStockAAManager
 import com.andrerinas.openheadunit.utils.BluetoothHelper
 import com.andrerinas.openheadunit.utils.Settings
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import android.widget.ImageView
 import kotlinx.coroutines.launch
 
 /** The car's standby screen. Wireless pairing is the primary path; USB remains a fallback. */
@@ -40,6 +42,7 @@ class HomeFragment : Fragment() {
     private val app get() = App.provide(requireContext())
     private var activeDialog: androidx.appcompat.app.AlertDialog? = null
     private var primaryBluetoothDevice: BluetoothDevice? = null
+    private var bydStockAAManager: BydStockAAManager? = null
 
     private val bluetoothReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -83,6 +86,20 @@ class HomeFragment : Fragment() {
         view.findViewById<View>(R.id.settings_button).setOnClickListener {
             startActivity(Intent(requireContext(), SettingsActivity::class.java))
         }
+
+        // BYD Yerleşik Android Auto (com.byd.androidauto) Yönetimi
+        val btnToggleBydAA = view.findViewById<View?>(R.id.btn_toggle_byd_aa)
+        val ivBydAAIcon = view.findViewById<ImageView?>(R.id.iv_byd_aa_status_icon)
+        val tvBydAAText = view.findViewById<TextView?>(R.id.tv_byd_aa_button_text)
+        val tvBydAAHint = view.findViewById<TextView?>(R.id.tv_byd_aa_hint)
+
+        if (btnToggleBydAA != null && tvBydAAText != null) {
+            val manager = BydStockAAManager(requireContext())
+            bydStockAAManager = manager
+            btnToggleBydAA.setOnClickListener {
+                manager.toggleStockAA(btnToggleBydAA, ivBydAAIcon, tvBydAAText, tvBydAAHint)
+            }
+        }
         // Going back to the car does not tear down a connection or disable reconnect.
         view.findViewById<View>(R.id.exit_button).setOnClickListener { requireActivity().moveTaskToBack(true) }
 
@@ -123,6 +140,17 @@ class HomeFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         refreshBluetoothDevices()
+
+        view?.let { v ->
+            val btn = v.findViewById<View?>(R.id.btn_toggle_byd_aa)
+            val iv = v.findViewById<ImageView?>(R.id.iv_byd_aa_status_icon)
+            val tv = v.findViewById<TextView?>(R.id.tv_byd_aa_button_text)
+            val hint = v.findViewById<TextView?>(R.id.tv_byd_aa_hint)
+            bydStockAAManager?.updateButtonUI(btn, iv, tv, hint)
+            bydStockAAManager?.enforceAutoDisableIfNeeded {
+                bydStockAAManager?.updateButtonUI(btn, iv, tv, hint)
+            }
+        }
     }
 
     override fun onStop() {

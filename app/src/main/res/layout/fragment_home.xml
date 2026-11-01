@@ -104,6 +104,47 @@
                 <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Kabloyu mu tercih edersiniz? Telefonunuzu takın." android:textSize="14sp" android:textColor="@color/da_muted" android:gravity="center" android:layout_marginTop="6dp"/>
                 <com.google.android.material.button.MaterialButton android:id="@+id/settings_button" android:layout_width="match_parent" android:layout_height="68dp" android:layout_marginTop="12dp" android:text="Ayarlar" android:textSize="18sp" android:textAllCaps="false" android:gravity="center" android:textColor="@color/da_text" app:backgroundTint="@color/da_surface" app:cornerRadius="20dp" app:icon="@drawable/ic_settings_white" app:iconTint="@color/da_accent" app:iconGravity="textStart" app:iconPadding="12dp"/>
                 <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Kendinizi evinizde hissedin." android:textSize="14sp" android:textColor="@color/da_muted" android:gravity="center" android:layout_marginTop="6dp"/>
+                <LinearLayout
+                    android:id="@+id/btn_toggle_byd_aa"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="14dp"
+                    android:background="@drawable/bg_settings_button"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp">
+
+                    <ImageView
+                        android:id="@+id/iv_byd_aa_status_icon"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_marginEnd="10dp"
+                        android:src="@android:drawable/presence_online" />
+
+                    <TextView
+                        android:id="@+id/tv_byd_aa_button_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:text="Yerleşik AA: Kontrol Ediliyor..."
+                        android:textColor="#FFFFFF"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_byd_aa_hint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center"
+                    android:text="DiAuto'nun kesintisiz bağlanması için yerleşik AA kapalı olmalıdır."
+                    android:textColor="@color/da_muted"
+                    android:textSize="12sp" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
